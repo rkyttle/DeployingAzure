@@ -1,0 +1,187 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ApplySecuritySettings": {
+            "type": "string",
+            "defaultValue": "true",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "metadata": {
+                "description": "Select whether the VM should include security settings, Default is true"
+            }
+        },
+        "availabilitySetId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "machineName": {
+            "type": "string"
+        },
+        "VNetID": {
+            "type": "string"
+        },
+        "SubnetName": {
+            "type": "string"
+        },
+        "IPAddress": {
+            "type": "string"
+        },
+        "AdminUserName": {
+            "type": "string"
+        },
+        "AdminPassword": {
+            "type": "securestring"
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_DS1_v2"
+        },
+        "ImageSKU": {
+            "type": "string",
+            "allowedValues": [
+                "2016-Datacenter",
+                "Standard"
+            ],
+            "defaultValue": "2016-Datacenter"
+        },
+        "publisher": {
+            "type": "string",
+            "allowedValues": [
+                "MicrosoftWindowsServer",
+                "MicrosoftSQLServer"
+            ],
+            "defaultValue": "MicrosoftWindowsServer"
+        },
+        "offer": {
+            "type": "string",
+            "allowedValues": [
+                "WindowsServer",
+                "SQL2017-WS2016"
+            ],
+            "defaultValue": "WindowsServer"
+        },
+        "version": {
+            "type": "string",
+            "defaultValue": "latest"
+        },
+        "TemplateSasToken": {
+            "type": "string"
+        },
+        "Timestamp": {
+            "type": "string",
+            "defaultValue": "MM/dd/yyyy H:mm:ss tt",
+            "metadata": {
+                "description": "The current datetime, as a string, to force the request to go through ARM even if all fields are the same as last ARM deployment of this template."
+            }
+        }
+    },
+    "variables": {
+        "subnetRef": "[concat(parameters('vnetId'), '/subnets/', parameters('SubnetName'))]",
+        "nicName": "[concat(parameters('MachineName'), 'nic1')]",
+        "ipConfigurationName": "ipconfig1",
+        "privateIPAllocationMethod": "Static",
+        "provisionVmAgent": "true",
+        "osDiskcreateOption": "FromImage",
+        "storageAccountType": "Premium_LRS",
+        "availabilitySetId": {
+            "id": "[parameters('availabilitySetId')]"
+        }
+    },
+    "resources": [
+        {
+            "name": "[variables('NicName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[variables('ipConfigurationName')]",
+                        "properties": {
+                            "privateIPAddress": "[parameters('IPAddress')]",
+                            "privateIPAllocationMethod": "[variables('privateIPAllocationMethod')]",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[parameters('MachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "availabilitySet": "[if(not(empty(parameters('availabilitySetId'))), variables('availabilitySetId'), json('null'))]",
+                "osProfile": {
+                    "computerName": "[parameters('MachineName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "[variables('provisionVmAgent')]"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('publisher')]",
+                        "offer": "[parameters('offer')]",
+                        "sku": "[parameters('ImageSKU')]",
+                        "version": "[parameters('version')]"
+                    },
+                    "osDisk": {
+                        "createOption": "[variables('osDiskcreateOption')]",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicname'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('MachineName'), 'nic1')]"
+            ]
+        },
+        {
+            "condition": "[equals(parameters('ApplySecuritySettings'), 'true')]",
+            "name": "[concat('SetWinSecuritySettings', parameters('MachineName'))]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2016-07-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/SetWinSecuritySettings/SetWinSecuritySettings.json', parameters('TemplateSasToken')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VMName": {
+                        "value": "[parameters('machineName')]"
+                    },
+                    "SASToken": {
+                        "value": "[parameters('TemplateSasToken')]"
+                    },
+                    "Timestamp": {
+                        "value": "[parameters('Timestamp')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[parameters('machineName')]"
+            ]
+        }
+    ]
+}
