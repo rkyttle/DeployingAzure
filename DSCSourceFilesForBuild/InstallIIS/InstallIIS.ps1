@@ -1,7 +1,7 @@
 ﻿Configuration InstallIIS
 {
     param(
-        [Parameter(HelpMessage='Timestamp used solely as a mechanism to force ARM to redeply DSC resources because the parameters have changed.')]
+        [Parameter(HelpMessage='Timestamp used solely as a mechanism to force ARM to redeploy DSC resources because the parameters have changed.')]
         [string]$Timestamp
         )
         
