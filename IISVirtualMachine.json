@@ -20,15 +20,6 @@
         "machineName": {
             "type": "string"
         },
-        "VNetID": {
-            "type": "string"
-        },
-        "SubnetName": {
-            "type": "string"
-        },
-        "IPAddress": {
-            "type": "string"
-        },
         "AdminUserName": {
             "type": "string"
         },
@@ -76,10 +67,15 @@
         }
     },
     "variables": {
-        "subnetRef": "[concat(parameters('vnetId'), '/subnets/', parameters('SubnetName'))]",
+        "virtualNetworkName": "myVnet",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetName": "Subnet",
+        "subnetPrefix": "10.0.0.0/24",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
         "nicName": "[concat(parameters('MachineName'), 'nic1')]",
         "ipConfigurationName": "ipconfig1",
-        "privateIPAllocationMethod": "Static",
+        "privateIPAllocationMethod": "Dynamic",
         "provisionVmAgent": "true",
         "osDiskcreateOption": "FromImage",
         "storageAccountType": "Premium_LRS",
@@ -88,6 +84,27 @@
         }
     },
     "resources": [
+        {
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
         {
             "name": "[variables('NicName')]",
             "type": "Microsoft.Network/networkInterfaces",
@@ -98,7 +115,6 @@
                     {
                         "name": "[variables('ipConfigurationName')]",
                         "properties": {
-                            "privateIPAddress": "[parameters('IPAddress')]",
                             "privateIPAllocationMethod": "[variables('privateIPAllocationMethod')]",
                             "subnet": {
                                 "id": "[variables('subnetRef')]"
