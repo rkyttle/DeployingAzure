@@ -1,0 +1,76 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMComputername": {
+            "type": "string"
+        },
+        "IPAddress": {
+            "type": "string"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-07-01",
+            "name": "CreateIISServer",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/rkyttle/DeployingAzure/master/IISVirtualMachine.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "machineName": {
+                        "value": "[parameters('VMComputername')]"
+                    },
+                    "VNetID": {
+                        "value": "/subscriptions/0/resourceGroups/acbdefg/providers/Microsoft.Network/virtualNetworks/Vnet"
+                    },
+                    "SubnetName": {
+                        "value": "Subnet1"
+                    },
+                    "IPAddress": {
+                        "value": "[parameters('IPAddress')]"
+                    },
+                    "AdminUserName": {
+                        "value": "ladmin"
+                    },
+                    "AdminPassword": {
+                        "reference": {
+                            "keyVault": {
+                                "id": "/subscriptions/0/resourceGroups/abcdefg/providers/Microsoft.KeyVault/vaults/Vault"
+                            },
+                            "secretName": "ladmin"
+                        }
+                    },
+                    "vmSize": {
+                        "value": "Standard_DS1_v2"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2016-07-01",
+            "name": "ConfigureIIS",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/ConfigureIIS/ConfigureIIS.json'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VMName": {
+                        "value": "[parameters('VMComputername')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "InstallIIS"
+            ]
+        }
+    ]
+}
