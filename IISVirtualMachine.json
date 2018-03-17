@@ -122,7 +122,10 @@
                         }
                     }
                 ]
-            }
+            },
+            "dependsOn": [
+                "[variables('virtualNetworkName')]"
+            ]
         },
         {
             "name": "[parameters('MachineName')]",
