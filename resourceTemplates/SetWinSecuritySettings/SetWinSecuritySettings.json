@@ -5,9 +5,6 @@
         "VMname": {
             "type": "string"
         },
-        "SasToken": {
-            "type": "string"
-        },
         "Timestamp": {
             "type": "string",
             "defaultValue": "MM/dd/yyyy H:mm:ss tt",
@@ -31,7 +28,7 @@
                 "typeHandlerVersion": "2.19",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "ModulesUrl": "[uri(deployment().properties.templateLink.uri, concat(variables('templateName'),'.zip', parameters('SasToken')))]",
+                    "ModulesUrl": "[uri(deployment().properties.templateLink.uri, concat(variables('templateName'),'.zip'))]",
                     "ConfigurationFunction": "[concat(variables('templateName'), '.ps1', '\\', variables('templateName'))]",
                     "Properties": {
                         "Timestamp": "[parameters('Timestamp')]"
