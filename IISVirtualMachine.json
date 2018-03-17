@@ -67,9 +67,6 @@
             "type": "string",
             "defaultValue": "latest"
         },
-        "TemplateSasToken": {
-            "type": "string"
-        },
         "Timestamp": {
             "type": "string",
             "defaultValue": "MM/dd/yyyy H:mm:ss tt",
@@ -164,15 +161,12 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/SetWinSecuritySettings/SetWinSecuritySettings.json', parameters('TemplateSasToken')))]",
+                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/SetWinSecuritySettings/SetWinSecuritySettings.json'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "VMName": {
                         "value": "[parameters('machineName')]"
-                    },
-                    "SASToken": {
-                        "value": "[parameters('TemplateSasToken')]"
                     },
                     "Timestamp": {
                         "value": "[parameters('Timestamp')]"
@@ -190,15 +184,12 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/InstallIIS/InstallIIS.json', parameters('TemplateSasToken')))]",
+                    "uri": "[uri(deployment().properties.templateLink.uri, concat('resourceTemplates/InstallIIS/InstallIIS.json'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "VMName": {
                         "value": "[parameters('machineName')]"
-                    },
-                    "SASToken": {
-                        "value": "[parameters('TemplateSasToken')]"
                     },
                     "Timestamp": {
                         "value": "[parameters('Timestamp')]"
