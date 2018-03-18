@@ -76,6 +76,7 @@
         "nicName": "[concat(parameters('MachineName'), 'nic1')]",
         "ipConfigurationName": "ipconfig1",
         "privateIPAllocationMethod": "Dynamic",
+        "publicIpAddressName": "[concat(parameters('MachineName'), 'publicIp')]",
         "provisionVmAgent": "true",
         "osDiskcreateOption": "FromImage",
         "storageAccountType": "Premium_LRS",
@@ -84,6 +85,16 @@
         }
     },
     "resources": [
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2017-06-01",
+            "location": "[resourceGroup().location]",
+            "comments": "Public IP for your Primary NIC",
+            "properties": {
+                "publicIpAllocationMethod": "Dynamic"
+            }
+        },
         {
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/virtualNetworks",
@@ -118,6 +129,9 @@
                             "privateIPAllocationMethod": "[variables('privateIPAllocationMethod')]",
                             "subnet": {
                                 "id": "[variables('subnetRef')]"
+                            },
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
                             }
                         }
                     }
