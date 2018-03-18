@@ -230,7 +230,7 @@
                 }
             },
             "dependsOn": [
-                "[parameters('machineName')]"
+                "[concat('SetWinSecuritySettings', parameters('MachineName'))]"
             ]
         }
     ]
