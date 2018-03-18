@@ -93,7 +93,10 @@
             "comments": "Public IP for your Primary NIC",
             "properties": {
                 "publicIpAllocationMethod": "Dynamic"
-            }
+            },
+            "dependsOn": [
+                "[variables('virtualNetworkName')]"
+            ]
         },
         {
             "apiVersion": "2016-03-30",
@@ -138,7 +141,7 @@
                 ]
             },
             "dependsOn": [
-                "[variables('virtualNetworkName')]"
+                "[variables('publicIpAddressName')]"
             ]
         },
         {
